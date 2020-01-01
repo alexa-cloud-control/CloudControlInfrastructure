@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: VPC for Meet the AWS training
+Description: Sandbox VPC for Alexa-CloudControl
 
 Resources:
   BaseVpc:
