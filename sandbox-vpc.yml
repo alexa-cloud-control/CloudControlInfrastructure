@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: VPC for Meet the AWS training
+
+Resources:
+  BaseVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - 
+          Key: Name
+          Value: Sandbox-Alexa-CloudControl
+        -
+          Key: Project
+          Value: Alexa-CloudControl
+        -
+          Key: Purpose
+          Value: Sandbox
+
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: BaseVpc
+      AvailabilityZone: "eu-west-1a"
+      CidrBlock: 10.0.10.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - 
+          Key: Name
+          Value: public-subnet-a
+        -
+          Key: Project
+          Value: Alexa-CloudControl
+        -
+          Key: Purpose
+          Value: Sandbox
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: BaseVpc
+      AvailabilityZone: "eu-west-1b"
+      CidrBlock: 10.0.11.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: public-subnet-b
+        -
+          Key: Project
+          Value: Alexa-CloudControl
+        -
+          Key: Purpose
+          Value: Sandbox
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: BaseVpc
+      Tags:
+        - 
+          Key: Name
+          Value: PublicRouteTable
+        -
+          Key: Project
+          Value: Alexa-CloudControl
+        -
+          Key: Purpose
+          Value: Sandbox
+
+  PublicSubnetAPublicRouteTableAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetA
+      RouteTableId:
+        Ref: PublicRouteTable
+
+  PublicSubnetBPublicRouteTableAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetB
+      RouteTableId:
+        Ref: PublicRouteTable
+
+  IG:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - 
+        Key: Network
+        Value: Public
+      - 
+        Key: Name
+        Value: IG
+      -
+        Key: Project
+        Value: Alexa-CloudControl
+      -
+        Key: Purpose
+        Value: Sandbox
+
+  AttachIG:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: IG
+      VpcId:
+        Ref: BaseVpc
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachIG
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: IG
+
+Outputs:
+  VpcName:
+    Description: VPC1 Name
+    Value:
+      Ref: BaseVpc
+    Export:
+      Name: !Sub "${AWS::StackName}-VpcName"
+
+  PublicSubnetA:
+    Description: PublicSubnetA
+    Value:
+      Ref: PublicSubnetA
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicSubnetA"
+
+  PublicSubnetB:
+    Description: PublicSubnetB
+    Value:
+      Ref: PublicSubnetB
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicSubnetB"
+
+  PublicRouteTable:
+    Description: PublicRouteTable
+    Value:
+      Ref: PublicRouteTable
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicRouteTable"

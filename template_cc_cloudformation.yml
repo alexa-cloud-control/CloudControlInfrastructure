@@ -1,0 +1,153 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Infrastructure for Alexa-CloudControl
+
+Resources:
+
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ARTIFACTBUCKETNAME
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ManageVersions
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
+            NoncurrentVersionExpirationInDays: 60
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        -
+          Key: Name
+          Value: ARTIFACTBUCKETNAME
+        -
+          Key: Project
+          Value: Alexa-CloudControl
+        -
+          Key: Purpose
+          Value: Artifacts storage
+
+  DeployHashTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: DEPLOYHASH
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        -
+          AttributeName: "FunctionName"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "FunctionName"
+          KeyType: "HASH"
+      Tags:
+        -
+          Key: Name
+          Value: DEPLOYHASH
+        -
+          Key: Project
+          Value: Alexa-CloudControl
+        -
+          Key: Purpose
+          Value: Terraform Locks table
+
+  ContextTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CONTEXTTABLE
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        -
+          AttributeName: "Element"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "Element"
+          KeyType: "HASH"
+      Tags:
+        -
+          Key: Name
+          Value: CONTEXTTABLE
+        -
+          Key: Project
+          Value: Alexa-CloudControl
+        -
+          Key: Purpose
+          Value: CloudControl Context table
+
+  AlexaAirlyTravisRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: IAM role for Travis execution created by Cloudformation
+      Path: /cloudcontrol/
+      RoleName: iam-role-for-travis-alexa-cloudcontrol
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - s3.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: iam-policy-for-travis-alexa-cloudcontrol
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource:
+                    !Join
+                      - ''
+                      - - 'arn:aws:s3:::'
+                        - !Ref ArtifactsBucket
+              -
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                Resource:
+                  -
+                    !Join
+                      - ''
+                      - - 'arn:aws:dynamodb:eu-west-1:ACCOUNTNUMBER:table/'
+                        - !Ref ContextTable
+                  -
+                    !Join
+                      - ''
+                      - - 'arn:aws:dynamodb:eu-west-1:ACCOUNTNUMBER:table/'
+                        - !Ref DeployHashTable
+Outputs:
+  ArtifactsBucketName:
+    Description: Artifacts bucket for Alexa-CloudControl
+    Value: !Ref ArtifactsBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-ArtifactsBucket"
+
+  ArtifactsBucketArn:
+    Description: Artifacts bucket for Alexa-CloudControl Arn
+    Value: !GetAtt ArtifactsBucket.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-ArtifactsBucketArn"
+
+  DeployHashTableName:
+    Description: Deploy hashes DynamoDB table for Alexa-CloudControl
+    Value: !Ref DeployHashTable
+    Export:
+      Name: !Sub "${AWS::StackName}-DeployHashTable"
+
+  AirlyTableName:
+    Description: Data DynaloDB Table for Alexa-CloudControl
+    Value: !Ref ContextTable
+    Export:
+      Name: !Sub "${AWS::StackName}-ContextTable"
