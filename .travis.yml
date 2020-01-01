@@ -19,27 +19,27 @@ jobs:
       script:
         - echo "Check for commit ${TRAVIS_COMMIT} and tag ${TRAVIS_TAG} from branch ${TRAVIS_BRANCH}."
         - echo "This is build number ${TRAVIS_BUILD_NUMBER}, for ${TRAVIS_REPO_SLUG}."
-        - sed -i -e "s/DEPLOYHASH/${deploy_table}/g" template_cloudformation.yml
-        - sed -i -e "s/ARTIFACTBUCKETNAME/${artifact_bucket}/g" template_cloudformation.yml
-        - sed -i -e "s/CONTEXTTABLE/${dynamodb_context}/g" template_cloudformation.yml
-        - sed -i -e "s/ACCOUNTNUMBER/${account_number}/g" template_cloudformation.yml
+        - sed -i -e "s/DEPLOYHASH/${deploy_table}/g" template_cc_cloudformation.yml
+        - sed -i -e "s/ARTIFACTBUCKETNAME/${artifact_bucket}/g" template_cc_cloudformation.yml
+        - sed -i -e "s/CONTEXTTABLE/${dynamodb_context}/g" template_cc_cloudformation.yml
+        - sed -i -e "s/ACCOUNTNUMBER/${account_number}/g" template_cc_cloudformation.yml
         - docker pull almerhor/cfnlint:latest
-        - docker run --rm -v $(pwd)/:/lintfiles almerhor/cfnlint -t template_cloudformation.yml
+        - docker run --rm -v $(pwd)/:/lintfiles almerhor/cfnlint -t template_cc_cloudformation.yml
         - docker run --rm -v $(pwd)/:/lintfiles almerhor/cfnlint -i W3010 sandbox-vpc.yml
     - stage: Deploy infra
       script:
         - echo "Feeding CloudFormation template with variables."
-        - sed -i -e "s/DEPLOYHASH/${deploy_table}/g" template_cloudformation.yml
-        - sed -i -e "s/ARTIFACTBUCKETNAME/${artifact_bucket}/g" template_cloudformation.yml
-        - sed -i -e "s/CONTEXTTABLE/${dynamodb_context}/g" template_cloudformation.yml
-        - sed -i -e "s/ACCOUNTNUMBER/${account_number}/g" template_cloudformation.yml
+        - sed -i -e "s/DEPLOYHASH/${deploy_table}/g" template_cc_cloudformation.yml
+        - sed -i -e "s/ARTIFACTBUCKETNAME/${artifact_bucket}/g" template_cc_cloudformation.yml
+        - sed -i -e "s/CONTEXTTABLE/${dynamodb_context}/g" template_cc_cloudformation.yml
+        - sed -i -e "s/ACCOUNTNUMBER/${account_number}/g" template_cc_cloudformation.yml
       deploy:
         - provider: Cloudformation
           edge: true # use DPLv2
           access_key_id: ${AWS_ACCESS_KEY_ID}
           secret_access_key: ${AWS_SECRET_ACCESS_KEY}
           capabilities: CAPABILITY_NAMED_IAM
-          template: template_cloudformation.yml
+          template: template_cc_cloudformation.yml
           stack_name: Alexa-CloudControl-Infrastructure
           region: ${terraform_region}
           wait: true
