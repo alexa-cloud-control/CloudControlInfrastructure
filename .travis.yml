@@ -25,7 +25,7 @@ jobs:
         - sed -i -e "s/ACCOUNTNUMBER/${account_number}/g" template_cc_cloudformation.yml
         - docker pull almerhor/cfnlint:latest
         - docker run --rm -v $(pwd)/:/lintfiles almerhor/cfnlint -t template_cc_cloudformation.yml
-        - docker run --rm -v $(pwd)/:/lintfiles almerhor/cfnlint -i W3010 sandbox-vpc.yml
+        - docker run --rm -v $(pwd)/:/lintfiles almerhor/cfnlint -i W3010 -t sandbox-vpc.yml
     - stage: Deploy infra
       script:
         - echo "Feeding CloudFormation template with variables."
