@@ -11,7 +11,7 @@ services:
 install:
   - sudo apt-add-repository "deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted universe multiverse"
   - sudo apt-get -qq update
-
+  - sudo pip install awscli
 
 jobs:
   include:
