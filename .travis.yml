@@ -46,7 +46,7 @@ jobs:
         - sed -i -e "s/CONTEXTTABLE/${dynamodb_context}/g" template_cc_cloudformation.yml
         - sed -i -e "s/ACCOUNTNUMBER/${account_number}/g" template_cc_cloudformation.yml
       deploy:
-        - provider: Cloudformation
+        - provider: cloudformation
           edge: true # use DPLv2
           access_key_id: ${AWS_ACCESS_KEY_ID}
           secret_access_key: ${AWS_SECRET_ACCESS_KEY}
@@ -56,7 +56,7 @@ jobs:
           region: ${terraform_region}
           wait: true
           promote: true
-        - provider: Cloudformation
+        - provider: cloudformation
           edge: true
           access_key_id: ${AWS_ACCESS_KEY_ID}
           secret_access_key: ${AWS_SECRET_ACCESS_KEY}
