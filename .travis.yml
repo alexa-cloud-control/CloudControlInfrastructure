@@ -4,6 +4,7 @@ language: shell
 stages:
   - name: Test template
   - name: Deploy infra
+    if: branch = master && type != cron
   
 services:
   - docker
@@ -38,6 +39,22 @@ jobs:
         - docker pull almerhor/cfnlint:latest
         - docker run --rm -v $(pwd)/:/lintfiles almerhor/cfnlint -t template_cc_cloudformation.yml
         - docker run --rm -v $(pwd)/:/lintfiles almerhor/cfnlint -i W3010 -t sandbox-vpc.yml
+
+    - stage: Test template
+      os: linux
+      language: python
+      python:
+        - "3.8"
+      script:
+        - pip install --upgrade pip
+        - pip install taskcat
+        - taskcat test run
+      deploy:
+        - provider: s3
+          bucket: ${taskcat_bucket}
+          upload-dir: ${TRAVIS_REPO_SLUG}/${TRAVIS_BUILD_NUMBER}
+          local_dir: taskcat_outputs
+
     - stage: Deploy infra
       script:
         - echo "Feeding CloudFormation template with variables."
