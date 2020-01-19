@@ -1,0 +1,9 @@
+project:
+  name: cloudcontrolinfrastructure
+  regions:
+    - eu-west-1
+tests:
+  test-sandbox:
+    template: ./sandbox-vpc.yml
+    regions:
+      - eu-west-1
