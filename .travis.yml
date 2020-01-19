@@ -51,9 +51,10 @@ jobs:
         - taskcat test run
       deploy:
         - provider: s3
-          bucket: ${taskcat_bucket}
-          upload-dir: ${TRAVIS_REPO_SLUG}/${TRAVIS_BUILD_NUMBER}
-          local_dir: taskcat_outputs
+          bucket: "${taskcat_bucket}"
+          upload-dir: "${TRAVIS_REPO_SLUG}/${TRAVIS_BUILD_NUMBER}"
+          local_dir: "taskcat_outputs"
+          skip_cleanup: true
 
     - stage: Deploy infra
       script:
