@@ -4,6 +4,7 @@ language: shell
 stages:
   - name: Test template
   - name: Deploy infra
+    if: branch = master && type != cron
   
 services:
   - docker
